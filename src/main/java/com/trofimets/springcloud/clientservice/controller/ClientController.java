@@ -25,8 +25,4 @@ public class ClientController {
         return clientService.getAllBooks();
     }
 
-    @GetMapping("/allBooksByRT")
-    public List<Book> getAllBooksListRT(){
-        return clientService.getAllBooksRT();
-    }
 }

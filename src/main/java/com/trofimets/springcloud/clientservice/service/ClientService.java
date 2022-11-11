@@ -2,6 +2,7 @@ package com.trofimets.springcloud.clientservice.service;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.trofimets.springcloud.clientservice.connector.BookServiceConnector;
+import com.trofimets.springcloud.clientservice.connector.BookServiceUpdateConnector;
 import com.trofimets.springcloud.clientservice.model.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -22,33 +23,19 @@ import java.util.logging.Logger;
 public class ClientService {
 
     private BookServiceConnector connector;
-    private RestTemplate restTemplate;
-    private final Logger LOG = Logger.getLogger(ClientService.class.getName());
+    private BookServiceUpdateConnector updateConnector;
 
     @Autowired
-    public ClientService(BookServiceConnector connector, RestTemplate restTemplate) {
+    public ClientService(BookServiceConnector connector, BookServiceUpdateConnector updateConnector) {
         this.connector = connector;
-        this.restTemplate = restTemplate;
+        this.updateConnector = updateConnector;
     }
 
-    @HystrixCommand(fallbackMethod = "failed")
     public List<Book> getAllBooks() {
         return connector.getAllBooks();
     }
 
-    public List<Book> getAllBooksRT() {
-        ResponseEntity<List<Book>> responseEntity = restTemplate.exchange("http://localhost:8081/data",
-                HttpMethod.GET, null,
-                new ParameterizedTypeReference<List<Book>>() {
-                });
-        List<Book> books = responseEntity.getBody();
-        return books;
-    }
-
-    public List<Book> failed() {
-        String error = "Service is not available now. Please try again later";
-        LOG.log(Level.INFO, error);
-        List<Book> books = new ArrayList<>(Arrays.asList(new Book("null","null","null","null")));
-        return books;
+    public List<Book> getAllBooksFallback() {
+        return updateConnector.getAllBooks();
     }
 }
